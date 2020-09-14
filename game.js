@@ -1,25 +1,45 @@
-import { update as updateSnake, draw as drawSnake, SNAKE_SPEED } from './snake.js'
+import { update as updateSnake, draw as drawSnake, SNAKE_SPEED, getSnakeHead, snakeIntersection } from './snake.js'
+import { update as updateFood, draw as drawFood } from './food.js'
+import { outsideGrid } from './grid.js'
 
-let lastRenderTime = 0;
+let lastRenderTime = 0
+let gameOver = false
 const gameBoard = document.getElementById('game-board')
 
-function main(currentTime) {   // function that loops over on a set interval so it updates snake's postion.
-    window.requestAnimationFrame(main)   //tells us when the computer can update the current frame.
-    const secondsSinceLastRender = (currentTime - lastRenderTime) / 1000;   // this variable converts seconds to milliseconds
-    if (secondsSinceLastRender < 1 / SNAKE_SPEED) return   // if statements tells computer how often it should be rendering a new frame based on snake speed. Faster snake = more animations.
-    lastRenderTime = currentTime; //lastRenderTime variable is reassigned the the current time.
+function main(currentTime) {
+  if (gameOver) {
+    if (confirm('You lost. Press ok to restart.')) {
+      window.location = '/'
+    }
+    return
+  }
 
-    update()
-    draw()
+
+  window.requestAnimationFrame(main)
+  const secondsSinceLastRender = (currentTime - lastRenderTime) / 1000
+  if (secondsSinceLastRender < 1 / SNAKE_SPEED) return
+
+
+  lastRenderTime = currentTime
+
+  update()
+  draw()
 }
 
 window.requestAnimationFrame(main)
 
 function update() {
-    updateSnake()
+  updateSnake()
+  updateFood()
+  checkDeath()
 }
 
 function draw() {
-    gameBoard.innerHTML = "" // clears game board so snake moves w/o showing previous pieces behind it
-    drawSnake(gameBoard)
+  gameBoard.innerHTML = ''
+  drawSnake(gameBoard)
+  drawFood(gameBoard)
+}
+
+function checkDeath() {
+  gameOver = outsideGrid(getSnakeHead()) || snakeIntersection()
 }
